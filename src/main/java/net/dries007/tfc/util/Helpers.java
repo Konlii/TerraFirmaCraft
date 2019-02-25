@@ -42,6 +42,7 @@ public final class Helpers
         {
             if (us.getBlock() instanceof BlockPeat)
             {
+                //noinspection ConstantConditions
                 world.setBlockState(pos, BlocksTFC.PEAT.getDefaultState());
             }
             else if (us.getBlock() instanceof BlockRockVariant)
@@ -67,6 +68,7 @@ public final class Helpers
 
                 if (current.getBlock() instanceof BlockPeat)
                 {
+                    //noinspection ConstantConditions
                     world.setBlockState(target, BlocksTFC.PEAT_GRASS.getDefaultState());
                 }
                 else if (current.getBlock() instanceof BlockRockVariant)
@@ -88,11 +90,11 @@ public final class Helpers
         return input.stream().map(String::toLowerCase).anyMatch(itemsSet::contains);
     }
 
-    @SuppressWarnings("unchecked")
     public static <T extends TileEntity> T getTE(IBlockAccess world, BlockPos pos, Class<T> aClass)
     {
         TileEntity te = world.getTileEntity(pos);
         if (!aClass.isInstance(te)) return null;
+        //noinspection unchecked
         return (T) te;
     }
 
@@ -103,7 +105,6 @@ public final class Helpers
 
     public static String getTypeName(IForgeRegistryEntry<?> type)
     {
-        //noinspection ConstantConditions
         return JOINER_DOT.join(TFCConstants.MOD_ID, "types", type.getRegistryType().getSimpleName(), type.getRegistryName().getPath()).toLowerCase();
     }
 
@@ -136,10 +137,7 @@ public final class Helpers
     @Nonnull
     public static ItemStack consumeItem(ItemStack stack, int amount)
     {
-        if (stack.getCount() <= amount)
-        {
-            return ItemStack.EMPTY;
-        }
+        if (stack.getCount() <= amount) return ItemStack.EMPTY;
         stack.shrink(amount);
         return stack;
     }
@@ -179,35 +177,21 @@ public final class Helpers
      * Primarily for use in placing checks. Determines a solid side for the block to attach to.
      *
      * @param pos             position of the block/space to be checked.
-     * @param possibleSides   a list/array of all sides the block can attach to.
-     * @param preferredFacing this facing is checked first. It can be invalid or null.
+     * @param possibleSides   a list/array of all sides the block can attach to. Enumfacing constants are recommended.
+     *                        This MUST NOT contain null!
+     * @param prefferedFacing this facing is checked first. It can be invalid or null.
      * @return Found facing or null is none is found. This is the direction the block should be pointing and the side it stick TO, not the side it sticks WITH.
      */
-    public static EnumFacing getASolidFacing(World worldIn, BlockPos pos, @Nullable EnumFacing preferredFacing, EnumFacing... possibleSides)
+    public static EnumFacing getASolidFacing(World worldIn, BlockPos pos, EnumFacing[] possibleSides, @Nullable EnumFacing prefferedFacing)
     {
-        return getASolidFacing(worldIn, pos, preferredFacing, Arrays.asList(possibleSides));
+        return getASolidFacing(worldIn, pos, Arrays.asList(possibleSides), prefferedFacing);
     }
 
-    public static EnumFacing getASolidFacing(World worldIn, BlockPos pos, @Nullable EnumFacing preferredFacing, Collection<EnumFacing> possibleSides)
+    public static EnumFacing getASolidFacing(World worldIn, BlockPos pos, Collection<EnumFacing> possibleSides, @Nullable EnumFacing prefferedFacing)
     {
-        if (preferredFacing != null && possibleSides.contains(preferredFacing) && canHangAt(worldIn, pos, preferredFacing))
-        {
-            return preferredFacing;
-        }
+        if (possibleSides.contains(prefferedFacing) && canHangAt(worldIn, pos, prefferedFacing)) return prefferedFacing;
         for (EnumFacing side : possibleSides)
-        {
-            if (side != null && canHangAt(worldIn, pos, side))
-            {
-                return side;
-            }
-        }
-        return null;
-    }
-
-    @Nonnull
-    @SuppressWarnings("ConstantConditions")
-    public static <T> T getNull()
-    {
+            if (canHangAt(worldIn, pos, side)) return side;
         return null;
     }
 }

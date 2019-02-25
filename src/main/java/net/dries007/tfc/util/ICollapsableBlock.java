@@ -8,5 +8,4 @@ package net.dries007.tfc.util;
 // For raw stone, because it collapses
 public interface ICollapsableBlock
 {
-    // todo: this
 }

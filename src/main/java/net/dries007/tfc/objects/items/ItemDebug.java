@@ -7,14 +7,12 @@ package net.dries007.tfc.objects.items;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -22,6 +20,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import mcp.MethodsReturnNonnullByDefault;
+import net.dries007.tfc.objects.te.TEBellows;
+import net.dries007.tfc.objects.te.TEFirePit;
+import net.dries007.tfc.util.Helpers;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
@@ -79,24 +80,17 @@ public class ItemDebug extends Item
     @Override
     public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
     {
-        // Block
-        try
+        // todo: make this modular? Or something? Or just remove it once it has served its purpose
+        TEBellows te = Helpers.getTE(worldIn, pos, TEBellows.class);
+        if (te != null)
         {
-            Block block = worldIn.getBlockState(pos).getBlock();
-            block.getClass().getMethod("debug").invoke(block);
+            te.debug();
         }
-        catch (Throwable t) { /* Nothing Burger */ }
-
-        // Tile Entity
-        try
+        TEFirePit te2 = Helpers.getTE(worldIn, pos, TEFirePit.class);
+        if (te2 != null)
         {
-            TileEntity tile = worldIn.getTileEntity(pos);
-            if (tile != null)
-            {
-                tile.getClass().getMethod("debug").invoke(tile);
-            }
+            te2.debug();
         }
-        catch (Throwable t) { /* Nothing Burger */ }
         return EnumActionResult.SUCCESS;
     }
 }

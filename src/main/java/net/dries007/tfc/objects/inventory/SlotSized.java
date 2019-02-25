@@ -3,7 +3,7 @@
  * See the project README.md and LICENSE.txt for more information.
  */
 
-package net.dries007.tfc.objects.inventory.slot;
+package net.dries007.tfc.objects.inventory;
 
 import javax.annotation.Nonnull;
 

@@ -42,15 +42,16 @@ public class HeatCommand extends CommandBase
         if (args.length != 1) throw new WrongUsageException("1 argument required.");
         double heat = parseDouble(args[0], 0, 1600);
 
-        Entity entity = sender.getCommandSenderEntity();
-        if (entity instanceof EntityPlayer)
+        Entity e = sender.getCommandSenderEntity();
+        if (e instanceof EntityPlayer)
         {
-            EntityPlayer player = (EntityPlayer) entity;
-            ItemStack stack = player.getHeldItemMainhand();
-            IItemHeat cap = stack.getCapability(CapabilityItemHeat.ITEM_HEAT_CAPABILITY, null);
-            if (cap == null)
+            EntityPlayer player = (EntityPlayer) e;
+            ItemStack s = player.getHeldItemMainhand();
+            IItemHeat h = s.getCapability(CapabilityItemHeat.ITEM_HEAT_CAPABILITY, null);
+            if (h == null)
                 throw new WrongUsageException("The held item in mainhand does not have the item heat capability");
-            cap.setTemperature((float) heat);
+            h.setTemperature((float) heat);
+            s.setTagCompound(h.serializeNBT());
         }
         else
         {

@@ -5,8 +5,6 @@
 
 package net.dries007.tfc.objects.entity;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
 import com.google.common.base.Optional;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -31,7 +29,6 @@ import net.dries007.tfc.util.IFallingBlock;
 /**
  * todo: add entity damage
  */
-@ParametersAreNonnullByDefault
 public class EntityFallingBlockTFC extends Entity
 {
     private static final DataParameter<BlockPos> ORIGIN = EntityDataManager.createKey(EntityFallingBlockTFC.class, DataSerializers.BLOCK_POS);

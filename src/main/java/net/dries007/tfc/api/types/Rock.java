@@ -56,7 +56,6 @@ public class Rock extends IForgeRegistryEntry.Impl<Rock>
         return rockCategory;
     }
 
-    @SuppressWarnings("ConstantConditions")
     @Override
     public String toString()
     {

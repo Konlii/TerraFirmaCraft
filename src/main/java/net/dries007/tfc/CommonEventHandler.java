@@ -9,38 +9,35 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockLeaves;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
 import net.minecraft.item.*;
 import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 
 import net.dries007.tfc.api.capability.ItemStickCapability;
 import net.dries007.tfc.api.capability.size.CapabilityItemSize;
 import net.dries007.tfc.api.capability.size.Size;
 import net.dries007.tfc.api.capability.size.Weight;
 import net.dries007.tfc.api.util.IPlaceableItem;
-import net.dries007.tfc.objects.container.CapabilityContainerListener;
 import net.dries007.tfc.util.Helpers;
 
 import static net.dries007.tfc.api.util.TFCConstants.MOD_ID;
 
 @Mod.EventBusSubscriber(modid = MOD_ID)
-public final class CommonEventHandler
+public class CommonEventHandler
 {
     /**
      * Make leaves drop sticks
      */
     @SubscribeEvent
-    public static void onBlockHarvestDrops(BlockEvent.HarvestDropsEvent event)
+    public void onBlockHarvestDrops(BlockEvent.HarvestDropsEvent event)
     {
         final EntityPlayer harvester = event.getHarvester();
         final ItemStack heldItem = harvester == null ? ItemStack.EMPTY : harvester.getHeldItemMainhand();
@@ -69,23 +66,32 @@ public final class CommonEventHandler
      *    The event will fire AGAIN with the offhand and offhand stack.
      */
     @SubscribeEvent
-    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event)
+    public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event)
     {
         final World world = event.getWorld();
         final BlockPos pos = event.getPos();
         final ItemStack stack = event.getItemStack();
         final EntityPlayer player = event.getEntityPlayer();
 
+        if (event.getHand() == EnumHand.OFF_HAND)
+        {
+            ItemStack mainStack = player.getHeldItem(EnumHand.MAIN_HAND);
+            if (IPlaceableItem.Impl.isPlaceable(mainStack))
+            {
+                event.setCanceled(true);
+                return;
+            }
+        }
+
         if (IPlaceableItem.Impl.isPlaceable(stack))
         {
             IPlaceableItem placeable = IPlaceableItem.Impl.getPlaceable(stack);
             if (placeable.placeItemInWorld(world, pos, stack, player, event.getFace(), event.getHitVec()))
             {
-                player.setHeldItem(event.getHand(), Helpers.consumeItem(stack, player, placeable.consumeAmount()));
-
-                event.setCancellationResult(EnumActionResult.SUCCESS);
-                event.setCanceled(true);
+                player.setHeldItem(event.getHand(), Helpers.consumeItem(stack, player, 1));
             }
+            event.setCancellationResult(EnumActionResult.SUCCESS);
+            event.setCanceled(true);
         }
     }
 
@@ -94,12 +100,22 @@ public final class CommonEventHandler
      * Note: If you have an item that needs an active effect, use onItemRightClick(), or attach this via {@link IPlaceableItem.Impl}
      */
     @SubscribeEvent
-    public static void onRightClickItem(PlayerInteractEvent.RightClickItem event)
+    public void onRightClickItem(PlayerInteractEvent.RightClickItem event)
     {
         final World world = event.getWorld();
         final BlockPos pos = event.getPos();
         final ItemStack stack = event.getItemStack();
         final EntityPlayer player = event.getEntityPlayer();
+
+        if (event.getHand() == EnumHand.OFF_HAND)
+        {
+            ItemStack mainStack = player.getHeldItem(EnumHand.MAIN_HAND);
+            if (IPlaceableItem.Impl.isUsable(mainStack))
+            {
+                event.setCanceled(true);
+                return;
+            }
+        }
 
         if (IPlaceableItem.Impl.isUsable(stack))
         {
@@ -116,7 +132,7 @@ public final class CommonEventHandler
 
     //Used for IItemSize capability. You can either implement the interface or use the capability
     @SubscribeEvent
-    public static void attachItemCapabilities(AttachCapabilitiesEvent<ItemStack> e)
+    public void attachItemCapabilities(AttachCapabilitiesEvent<ItemStack> e)
     {
         ItemStack stack = e.getObject();
         // Skip items with existing capabilities
@@ -142,35 +158,5 @@ public final class CommonEventHandler
             CapabilityItemSize.add(e, item, Size.SMALL, Weight.MEDIUM, canStack);
         else
             CapabilityItemSize.add(e, item, Size.VERY_SMALL, Weight.LIGHT, canStack);
-    }
-
-    @SubscribeEvent
-    public static void onPlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event)
-    {
-        if (event.player instanceof EntityPlayerMP)
-        {
-            final EntityPlayerMP player = (EntityPlayerMP) event.player;
-            player.inventoryContainer.addListener(new CapabilityContainerListener(player));
-        }
-    }
-
-    @SubscribeEvent
-    public static void onPlayerCloneEvent(net.minecraftforge.event.entity.player.PlayerEvent.Clone event)
-    {
-        if (event.getEntityPlayer() instanceof EntityPlayerMP)
-        {
-            final EntityPlayerMP player = (EntityPlayerMP) event.getEntityPlayer();
-            player.inventoryContainer.addListener(new CapabilityContainerListener(player));
-        }
-    }
-
-    @SubscribeEvent
-    public static void onContainerOpenEvent(PlayerContainerEvent.Open event)
-    {
-        if (event.getEntityPlayer() instanceof EntityPlayerMP)
-        {
-            final EntityPlayerMP player = (EntityPlayerMP) event.getEntityPlayer();
-            event.getContainer().addListener(new CapabilityContainerListener(player));
-        }
     }
 }

@@ -24,10 +24,9 @@ public class ItemHeatHandler implements ICapabilitySerializable<NBTTagCompound>,
 {
     // These are "constants". Some implementations will want to change these based on other factors. (See ItemMold)
     protected float heatCapacity;
-    protected float meltTemp;
+    protected float meltingPoint;
 
     // These are the values from last point of update. They are updated when read from NBT, or when the temperature is set manually.
-    // Note that if temperature is == 0, lastUpdateTick should set itself to -1 to keep their capabilities compatible - i.e. stackable
     protected float temperature;
     protected long lastUpdateTick;
 
@@ -36,37 +35,31 @@ public class ItemHeatHandler implements ICapabilitySerializable<NBTTagCompound>,
      *
      * @param nbt          The NBT of the itemstack. (Provided in Item#initCapabilities())
      * @param heatCapacity The heat capacity
-     * @param meltTemp The melting point
+     * @param meltingPoint The melting point
      */
-    public ItemHeatHandler(@Nullable NBTTagCompound nbt, float heatCapacity, float meltTemp)
+    public ItemHeatHandler(@Nullable NBTTagCompound nbt, float heatCapacity, float meltingPoint)
     {
         this.heatCapacity = heatCapacity;
-        this.meltTemp = meltTemp;
+        this.meltingPoint = meltingPoint;
 
-        deserializeNBT(nbt);
+        if (nbt != null)
+            deserializeNBT(nbt);
     }
 
-    public ItemHeatHandler() {} // This is here so you can do a custom implementation
+    public ItemHeatHandler() { } // This is here so you can do a custom implementation
 
-    /**
-     * This gets the outwards facing temperature. It will differ from the internal temperature value or the value saved to NBT
-     * Note: if checking the temperature internally, DO NOT use temperature, use this instead, as temperature does not represent the current temperature
-     *
-     * @return The current temperature
-     */
     @Override
     public float getTemperature()
     {
+        // This gets the outwards facing temperature. It will differ from the internal temperature value or the value saved to NBT
+        // Note: if checking the temperature internally, DO NOT use temperature, use this instead, as temperature does not represent the current temperature
         return CapabilityItemHeat.adjustTemp(temperature, heatCapacity, CalenderTFC.getTotalTime() - lastUpdateTick);
     }
 
-    /**
-     * Update the temperature, and save the timestamp of when it was updated
-     * @param temperature the temperature to set. Between 0 - 1600
-     */
     @Override
     public void setTemperature(float temperature)
     {
+        // Update the temperature, and save the timestamp of when it was updated
         this.temperature = temperature;
         this.lastUpdateTick = CalenderTFC.getTotalTime();
     }
@@ -78,15 +71,16 @@ public class ItemHeatHandler implements ICapabilitySerializable<NBTTagCompound>,
     }
 
     @Override
-    public float getMeltTemp()
+    public float getMeltingPoint()
     {
-        return meltTemp;
+        return meltingPoint;
     }
 
+    // Override for that 0.00001% efficiency
     @Override
     public boolean isMolten()
     {
-        return getTemperature() >= meltTemp;
+        return getTemperature() >= meltingPoint;
     }
 
     @Override
@@ -104,20 +98,11 @@ public class ItemHeatHandler implements ICapabilitySerializable<NBTTagCompound>,
     }
 
     @Override
-    @Nonnull
     public NBTTagCompound serializeNBT()
     {
         NBTTagCompound nbt = new NBTTagCompound();
-        float temp = getTemperature();
-        nbt.setFloat("heat", temp);
-        if (temp <= 0)
-        {
-            nbt.setLong("ticks", -1);
-        }
-        else
-        {
-            nbt.setLong("ticks", CalenderTFC.getTotalTime());
-        }
+        nbt.setFloat("heat", getTemperature());
+        nbt.setLong("ticks", CalenderTFC.getTotalTime());
         return nbt;
     }
 

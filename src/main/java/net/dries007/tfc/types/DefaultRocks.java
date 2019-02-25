@@ -16,9 +16,8 @@ import net.dries007.tfc.objects.ToolMaterialsTFC;
 
 import static net.dries007.tfc.api.util.TFCConstants.MOD_ID;
 
-@SuppressWarnings("WeakerAccess")
 @Mod.EventBusSubscriber(modid = MOD_ID)
-public final class DefaultRocks
+public class DefaultRocks
 {
     public static final ResourceLocation SEDIMENTARY = new ResourceLocation(MOD_ID, "sedimentary");
     public static final ResourceLocation METAMORPHIC = new ResourceLocation(MOD_ID, "metamorphic");
@@ -52,10 +51,10 @@ public final class DefaultRocks
     public static void onPreRegisterRockCategory(TFCRegistryEvent.RegisterPreBlock<RockCategory> event)
     {
         event.getRegistry().registerAll(
-            new RockCategory(IGNEOUS_INTRUSIVE, ToolMaterialsTFC.IG_IN, true, true, true, -0.4f, 0f, true),
-            new RockCategory(IGNEOUS_EXTRUSIVE, ToolMaterialsTFC.IG_EX, true, true, true, -0.5f, 0f, true),
-            new RockCategory(SEDIMENTARY, ToolMaterialsTFC.SED, true, false, false, 0.3f, 5f, false),
-            new RockCategory(METAMORPHIC, ToolMaterialsTFC.M_M, true, true, false, 0.2f, 0f, false)
+            new RockCategory(IGNEOUS_INTRUSIVE, ToolMaterialsTFC.IG_IN, true, true, true, -0.4f, 0f),
+            new RockCategory(IGNEOUS_EXTRUSIVE, ToolMaterialsTFC.IG_EX, true, true, true, -0.5f, 0f),
+            new RockCategory(SEDIMENTARY, ToolMaterialsTFC.SED, true, false, false, 0.3f, 5f),
+            new RockCategory(METAMORPHIC, ToolMaterialsTFC.M_M, true, true, false, 0.2f, 0f)
         );
     }
 

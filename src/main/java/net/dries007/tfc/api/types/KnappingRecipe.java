@@ -3,14 +3,13 @@
  * See the project README.md and LICENSE.txt for more information.
  */
 
-package net.dries007.tfc.api.recipes;
+package net.dries007.tfc.api.types;
 
 import java.util.function.Function;
 
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
-import net.dries007.tfc.api.types.RockCategory;
 import net.dries007.tfc.api.util.IRockObject;
 import net.dries007.tfc.util.SimpleCraftMatrix;
 

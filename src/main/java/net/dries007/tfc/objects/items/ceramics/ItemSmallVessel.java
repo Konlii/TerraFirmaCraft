@@ -131,6 +131,7 @@ public class ItemSmallVessel extends ItemFiredPottery
     @Override
     public ItemStack getFiringResult(ItemStack input, Metal.Tier tier)
     {
+        NBTTagCompound nbt = input.getTagCompound();
         // Case 1: The input is a filled vessel
         IItemHandler capItemHandler = input.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
         if (capItemHandler instanceof ISmallVesselHandler)
@@ -145,9 +146,11 @@ public class ItemSmallVessel extends ItemFiredPottery
                 cap.setFluidMode(true);
                 cap.fill(new FluidStack(FluidsTFC.getMetalFluid(alloy.getResult()), alloy.getAmount()), true);
                 cap.setTemperature(1600f);
+                nbt = cap.serializeNBT();
             }
 
         }
+        input.setTagCompound(nbt);
         return input;
     }
 
@@ -157,14 +160,14 @@ public class ItemSmallVessel extends ItemFiredPottery
         private final FluidTank tank;
 
         private float heatCapacity;
-        private float meltTemp;
+        private float meltingPoint;
         private float temperature;
         private long lastUpdateTick;
 
         private boolean fluidMode; // Does the stack contain molten metal?
-        private IFluidTankProperties[] fluidTankProperties;
+        private IFluidTankProperties fluidTankProperties[];
 
-        SmallVesselCapability(@Nullable NBTTagCompound nbt)
+        public SmallVesselCapability(@Nullable NBTTagCompound nbt)
         {
             super(4);
 
@@ -188,7 +191,7 @@ public class ItemSmallVessel extends ItemFiredPottery
         {
             if (fluidMode)
             {
-                return getTemperature() < meltTemp ? Mode.LIQUID_SOLID : Mode.LIQUID_MOLTEN;
+                return getTemperature() < meltingPoint ? Mode.LIQUID_SOLID : Mode.LIQUID_MOLTEN;
             }
             return Mode.INVENTORY;
         }
@@ -235,16 +238,8 @@ public class ItemSmallVessel extends ItemFiredPottery
             fluidMode = tank.getFluidAmount() > 0;
             nbt.setBoolean("fluidMode", fluidMode);
 
-            float temp = getTemperature();
-            nbt.setFloat("heat", temp);
-            if (temp <= 0)
-            {
-                nbt.setLong("ticks", -1);
-            }
-            else
-            {
-                nbt.setLong("ticks", CalenderTFC.getTotalTime());
-            }
+            nbt.setFloat("heat", getTemperature());
+            nbt.setLong("ticks", CalenderTFC.getTotalTime());
 
             if (fluidMode)
             {
@@ -334,14 +329,14 @@ public class ItemSmallVessel extends ItemFiredPottery
         }
 
         @Override
-        public float getMeltTemp()
+        public float getMeltingPoint()
         {
-            return meltTemp;
+            return meltingPoint;
         }
 
         @SideOnly(Side.CLIENT)
         @Override
-        public void addHeatInfo(@Nonnull ItemStack stack, @Nonnull List<String> text)
+        public void addHeatInfo(ItemStack stack, List<String> text, boolean clearStackNBT)
         {
             Metal metal = getMetal();
             if (metal != null)
@@ -351,7 +346,7 @@ public class ItemSmallVessel extends ItemFiredPottery
                     desc += " - " + I18n.format("tfc.tooltip.liquid");
                 text.add(desc);
             }
-            ISmallVesselHandler.super.addHeatInfo(stack, text);
+            ISmallVesselHandler.super.addHeatInfo(stack, text, false); // Never clear the NBT based on heat alone
         }
 
         private void updateFluidData(@Nullable FluidStack fluid)
@@ -359,12 +354,12 @@ public class ItemSmallVessel extends ItemFiredPottery
             if (fluid != null && fluid.getFluid() instanceof FluidMetal)
             {
                 Metal metal = ((FluidMetal) fluid.getFluid()).getMetal();
-                this.meltTemp = metal.getMeltTemp();
+                this.meltingPoint = metal.getMeltTemp();
                 this.heatCapacity = metal.getSpecificHeat();
             }
             else
             {
-                this.meltTemp = 1000;
+                this.meltingPoint = 1000;
                 this.heatCapacity = 1;
             }
 

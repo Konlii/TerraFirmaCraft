@@ -22,20 +22,22 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
 import mcp.MethodsReturnNonnullByDefault;
-import net.dries007.tfc.objects.inventory.capability.ItemStackHandlerTE;
+import net.dries007.tfc.objects.inventory.ItemStackHandlerTE;
 
-/**
- * This is a helper class for TE's with a simple inventory that will respect automation
- * To provide side based automation, you must expose a IItemHandler wrapper based on the input side
- * Without overriding the getCapability methods, this will not accept items from external automation
- */
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public abstract class TEInventory extends TileEntity
+public abstract class TESidedInventory extends TileEntity
 {
     protected final ItemStackHandler inventory;
 
-    TEInventory(int inventorySize)
+    /*
+     This is a helper class for TE's with a simple inventory that will respect automation
+     To provide side based automation, you must expose a IItemHandler wrapper based on the input side
+     Without overriding the getCapability methods, this will not accept items from external automation
+
+
+     */
+    TESidedInventory(int inventorySize)
     {
         super();
         inventory = new ItemStackHandlerTE(this, inventorySize);
