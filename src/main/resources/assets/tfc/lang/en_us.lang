@@ -2964,3 +2964,12 @@ tile.tfc.plants.tulip_white.name=White Tulip
 tile.tfc.plants.water_canna.name=Water Canna
 tile.tfc.plants.water_lily.name=Water Lily
 tile.tfc.plants.yucca.name=Yucca
+
+# Blocks
+tile.tfc.quern.name=Quern
+
+# Items
+item.tfc.handstone.name=Quern Handstone
+
+# Subtitles
+subtitles.block.quern.grind=Quern grinding

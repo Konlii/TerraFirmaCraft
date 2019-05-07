@@ -103,6 +103,8 @@ public final class BlocksTFC
     public static final BlockTorchTFC TORCH = getNull();
     public static final BlockCharcoalForge CHARCOAL_FORGE = getNull();
     public static final BlockCrucible CRUCIBLE = getNull();
+    @GameRegistry.ObjectHolder("quern")
+    public static final BlockQuern QUERN = getNull();
 
     // All these are for use in model registration. Do not use for block lookups.
     // Use the static get methods in the classes instead.
@@ -251,6 +253,7 @@ public final class BlocksTFC
         normalItemBlocks.add(new ItemBlock(register(r, "thatch", new BlockThatch(Material.PLANTS), CT_DECORATIONS)));
 
         normalItemBlocks.add(new ItemBlock(register(r, "crucible", new BlockCrucible(), CT_MISC)));
+        normalItemBlocks.add(new ItemBlock(register(r, "quern", new BlockQuern(), CT_MISC)));
 
         {
             Builder<BlockFluidBase> b = ImmutableList.builder();
@@ -462,7 +465,6 @@ public final class BlocksTFC
 
         // todo: metal lamps (on/off with states)
         // todo: sluice
-        // todo: quern
         // todo: loom
         inventoryItemBlocks.add(new ItemBlockTFC(register(r, "bellows", new BlockBellows(), CT_MISC)));
         // todo: bloomery
@@ -496,6 +498,7 @@ public final class BlocksTFC
         register(TECharcoalForge.class, "charcoal_forge");
         register(TEAnvilTFC.class, "anvil");
         register(TECrucible.class, "crucible");
+        register(TEQuern.class, "quern");
     }
 
     public static boolean isWater(IBlockState current)

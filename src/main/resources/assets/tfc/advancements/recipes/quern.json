@@ -1,0 +1,44 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "tfc:devices/quern"
+    ]
+  },
+  "criteria": {
+    "has_ingredient": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "type": "forge:ore_dict",
+            "ore": "stonePolished"
+          }
+        ]
+      }
+    },
+    "has_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "tfc:quern"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "tfc:devices/quern"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_ingredient",
+      "has_item",
+      "has_the_recipe"
+    ]
+  ]
+}

@@ -13,9 +13,12 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
 import net.minecraft.item.*;
 import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
@@ -23,6 +26,7 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 
 import net.dries007.tfc.api.capability.ItemStickCapability;
 import net.dries007.tfc.api.capability.size.CapabilityItemSize;
@@ -37,8 +41,15 @@ import net.dries007.tfc.world.classic.CalendarTFC;
 import static net.dries007.tfc.api.util.TFCConstants.MOD_ID;
 
 @Mod.EventBusSubscriber(modid = MOD_ID)
+@GameRegistry.ObjectHolder(MOD_ID)
 public final class CommonEventHandler
 {
+    /**
+     * Register SoundEvents
+     */
+    @GameRegistry.ObjectHolder("quern.grind")
+    public static final SoundEvent QUERN_GRIND = createSoundEvent("quern.grind");
+
     /**
      * Make leaves drop sticks
      */
@@ -191,6 +202,30 @@ public final class CommonEventHandler
         if (world.provider.getDimension() == 0 && !world.isRemote)
         {
             CalendarTFC.CalendarWorldData.onLoad(event.getWorld());
+        }
+    }
+
+    /**
+     * Create a {@link SoundEvent}.
+     *
+     * @param soundName The SoundEvent's name without the MOD_ID prefix
+     * @return The SoundEvent
+     */
+    private static SoundEvent createSoundEvent(String soundName)
+    {
+        final ResourceLocation soundID = new ResourceLocation(MOD_ID, soundName);
+        return new SoundEvent(soundID).setRegistryName(soundID);
+    }
+
+    @Mod.EventBusSubscriber
+    public static class RegistrationHandler
+    {
+        @SubscribeEvent
+        public static void registerSoundEvents(RegistryEvent.Register<SoundEvent> event)
+        {
+            event.getRegistry().registerAll(
+                QUERN_GRIND
+            );
         }
     }
 }

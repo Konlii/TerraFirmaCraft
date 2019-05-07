@@ -8,8 +8,10 @@ package net.dries007.tfc.objects.items.itemblock;
 import javax.annotation.Nonnull;
 
 import net.minecraft.block.Block;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
 
 import net.dries007.tfc.api.capability.size.IItemSize;
 import net.dries007.tfc.api.capability.size.Size;
@@ -46,6 +48,12 @@ public class ItemBlockTFC extends ItemBlock implements IItemSize
     public Weight getWeight(@Nonnull ItemStack stack)
     {
         return weight;
+    }
+
+    @Override
+    public boolean doesSneakBypassUse(ItemStack stack, net.minecraft.world.IBlockAccess world, BlockPos pos, EntityPlayer player)
+    {
+        return true;
     }
 
     @Override

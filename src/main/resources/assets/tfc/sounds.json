@@ -1,0 +1,10 @@
+{
+  "quern.grind": {
+    "category": "block",
+    "subtitle": "subtitles.block.quern.grind",
+    "sounds": [
+      "tfc:stonedrag1",
+      "tfc:stonedrag2"
+    ]
+  }
+}

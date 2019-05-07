@@ -24,6 +24,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import net.dries007.tfc.api.registries.TFCRegistries;
@@ -181,6 +182,22 @@ public final class Helpers
             return;
         EntityItem entityitem = new EntityItem(world, pos.getX(), pos.getY(), pos.getZ(), stack);
         world.spawnEntity(entityitem);
+    }
+
+    /**
+     * Simple method to drop items from a container inventory, rather than using InventoryHelper
+     */
+    public static void dropInventoryItems(World world, BlockPos pos, ItemStackHandler inventory)
+    {
+        for (int i = 0; i < inventory.getSlots(); ++i)
+        {
+            ItemStack itemstack = inventory.getStackInSlot(i);
+
+            if (!itemstack.isEmpty())
+            {
+                spawnItemStack(world, pos, itemstack);
+            }
+        }
     }
 
     /**

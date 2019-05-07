@@ -156,6 +156,7 @@ public class OreDictionaryHelper
         {
             case RAW:
                 MAP.put(thing, toString(prefixParts, "stone"));
+                MAP.put(thing, toString(prefixParts, "stone", "raw"));
                 MAP.put(thing, toString(prefixParts, "stone", rock.getRegistryName().getPath()));
                 MAP.put(thing, toString(prefixParts, "stone", rock.getRockCategory().getRegistryName().getPath()));
                 break;

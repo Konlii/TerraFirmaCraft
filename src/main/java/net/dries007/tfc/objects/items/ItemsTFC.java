@@ -70,6 +70,8 @@ public final class ItemsTFC
     public static final ItemUnfiredPottery CERAMICS_UNFIRED_POT = getNull();
     @GameRegistry.ObjectHolder("ceramics/unfired/bowl")
     public static final ItemUnfiredPottery CERAMICS_UNFIRED_BOWL = getNull();
+    @GameRegistry.ObjectHolder("handstone")
+    public static final ItemHandstone HANDSTONE = getNull();
 
     private static ImmutableList<Item> allSimpleItems;
     private static ImmutableList<ItemOreTFC> allOreItems;
@@ -192,6 +194,7 @@ public final class ItemsTFC
 
         simpleItems.add(register(r, "firestarter", new ItemFireStarter(), CT_MISC));
         simpleItems.add(register(r, "hay", new ItemMisc(Size.SMALL, Weight.LIGHT, "kindling"), CT_MISC));
+        simpleItems.add(register(r, "handstone", new ItemHandstone(), CT_MISC));
         register(r, "goldpan", new ItemGoldPan(), CT_MISC);
 
         simpleItems.add(register(r, "leather", new ItemLeatherTFC(), CT_MISC));
@@ -219,7 +222,6 @@ public final class ItemsTFC
         // todo: bloom & raw bloom ( = IMetalObject)
         // todo: jute & jute fiber
         // todo: quiver
-        // todo: millstone (quern)
 
         // todo: foods & plants & seeds & fruits & fruit tree saplings & berries & berry bushes
 
