@@ -14,7 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.items.IItemHandler;
 
-import net.dries007.tfc.objects.recipes.QuernRecipe;
+import net.dries007.tfc.objects.recipes.QuernRecipeManager;
 
 @ParametersAreNonnullByDefault
 public class SlotQuernOutput extends SlotOutput
@@ -55,7 +55,7 @@ public class SlotQuernOutput extends SlotOutput
         if (!this.player.world.isRemote)
         {
             int i = this.removeCount;
-            float f = QuernRecipe.instance().getGrindingExperience(stack);
+            float f = QuernRecipeManager.getInstance().getGrindingExperience(stack);
 
             if (f == 0.0F)
             {

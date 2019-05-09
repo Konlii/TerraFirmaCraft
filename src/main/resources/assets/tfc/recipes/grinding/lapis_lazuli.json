@@ -1,0 +1,12 @@
+{
+  "type": "tfc:quern",
+  "experience": 0.2,
+  "ingredient": {
+      "type": "forge:ore_dict",
+      "ore": "gemLapisLazuli"
+  },
+  "result": {
+    "item": "tfc:powder/lapis_lazuli_powder",
+    "count": 4
+  }
+}

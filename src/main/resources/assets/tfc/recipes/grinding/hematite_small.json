@@ -1,0 +1,13 @@
+{
+  "type": "tfc:quern",
+  "group": "tfc:hematite",
+  "experience": 0.1,
+  "ingredient": {
+      "type": "forge:ore_dict",
+      "ore": "oreHematiteSmall"
+  },
+  "result": {
+    "item": "tfc:powder/hematite_powder",
+    "count": 2
+  }
+}

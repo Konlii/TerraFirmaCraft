@@ -5,6 +5,7 @@
 
 package net.dries007.tfc.client.gui;
 
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.util.ResourceLocation;
@@ -20,6 +21,14 @@ public class GuiQuern extends GuiContainerTE<TEQuern>
     public GuiQuern(Container container, InventoryPlayer playerInv, TEQuern tile)
     {
         super(container, playerInv, tile, QUERN_BACKGROUND);
+    }
+
+    @Override
+    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY)
+    {
+        this.fontRenderer.drawString(I18n.format("container." + MOD_ID + ".quern"), 80, 6, 4210752);
+        this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, 4210752);
+        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
     }
 
     @Override

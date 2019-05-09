@@ -3080,6 +3080,9 @@ tile.tfc.plants.yucca.name=Yucca
 # Blocks
 tile.tfc.quern.name=Quern
 
+# Containers
+container.tfc.quern=Quern
+
 # Items
 item.tfc.handstone.name=Quern Handstone
 

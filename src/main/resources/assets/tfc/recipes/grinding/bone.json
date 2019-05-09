@@ -1,0 +1,14 @@
+{
+  "type": "tfc:quern",
+  "group": "tfc:bonemeal",
+  "experience": 0.15,
+  "ingredient": {
+      "type": "forge:ore_dict",
+      "ore": "bone"
+  },
+  "result": {
+    "item": "minecraft:dye",
+    "data": 15,
+    "count": 3
+  }
+}

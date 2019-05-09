@@ -1,0 +1,13 @@
+{
+  "type": "tfc:quern",
+  "group": "tfc:malachite",
+  "experience": 0.15,
+  "ingredient": {
+      "type": "forge:ore_dict",
+      "ore": "oreMalachitePoor"
+  },
+  "result": {
+    "item": "tfc:powder/malachite_powder",
+    "count": 3
+  }
+}

@@ -5,131 +5,105 @@
 
 package net.dries007.tfc.objects.recipes;
 
-import java.util.Map;
+import javax.annotation.Nonnull;
 
-import com.google.common.collect.Maps;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
+import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.util.JsonUtils;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
+import net.minecraftforge.common.crafting.CraftingHelper;
+import net.minecraftforge.common.crafting.IRecipeFactory;
+import net.minecraftforge.common.crafting.JsonContext;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 
-import net.dries007.tfc.TerraFirmaCraft;
-import net.dries007.tfc.api.registries.TFCRegistries;
-import net.dries007.tfc.objects.Powder;
-import net.dries007.tfc.objects.items.ItemPowder;
-import net.dries007.tfc.objects.items.metal.ItemOreTFC;
-import net.dries007.tfc.objects.items.rock.ItemRock;
-
-import static net.dries007.tfc.types.DefaultMetals.*;
-import static net.dries007.tfc.types.DefaultRocks.*;
-
-// todo: jsonify and oredictionary quern recipes
-@SuppressWarnings("WeakerAccess")
-public class QuernRecipe
+@SuppressWarnings("unused")
+public class QuernRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements IRecipe
 {
-    private static final QuernRecipe QUERN_RECIPE = new QuernRecipe();
+    @Nonnull
+    protected ItemStack output;
+    protected Ingredient input;
+    protected ResourceLocation group;
 
-    public static QuernRecipe instance()
+    public QuernRecipe(ResourceLocation group, Block result, Object... recipe) { this(group, new ItemStack(result), recipe); }
+
+    public QuernRecipe(ResourceLocation group, Item result, Object... recipe) { this(group, new ItemStack(result), recipe); }
+
+    public QuernRecipe(ResourceLocation group, Ingredient input, @Nonnull ItemStack result)
     {
-        return QUERN_RECIPE;
+        this.group = group;
+        output = result.copy();
+        this.input = input;
     }
 
-    private final Map<ItemStack, ItemStack> grindingList = Maps.newHashMap();
-    private final Map<ItemStack, Float> experienceList = Maps.newHashMap();
-
-    @SuppressWarnings("ConstantConditions")
-    private QuernRecipe()
+    @SuppressWarnings("StringConcatenationInLoop")
+    public QuernRecipe(ResourceLocation group, @Nonnull ItemStack result, Object... recipe)
     {
-        this.addGrindingRecipe(ItemOreTFC.get(TFCRegistries.ORES.getValue(BORAX), 1), ItemPowder.get(Powder.FLUX, 6), 0.1F);
-        this.addGrindingRecipe(ItemRock.get(TFCRegistries.ROCKS.getValue(CHALK), 1), ItemPowder.get(Powder.FLUX, 2), 0.1F);
-        this.addGrindingRecipe(ItemRock.get(TFCRegistries.ROCKS.getValue(DOLOMITE), 1), ItemPowder.get(Powder.FLUX, 4), 0.1F);
-        this.addGrindingRecipe(ItemRock.get(TFCRegistries.ROCKS.getValue(LIMESTONE), 1), ItemPowder.get(Powder.FLUX, 2), 0.1F);
-        this.addGrindingRecipe(ItemRock.get(TFCRegistries.ROCKS.getValue(MARBLE), 1), ItemPowder.get(Powder.FLUX, 2), 0.1F);
-        this.addGrindingRecipe(ItemOreTFC.get(TFCRegistries.ORES.getValue(KAOLINITE), 1), ItemPowder.get(Powder.KAOLINITE_POWDER, 4), 0.1F);
-        this.addGrindingRecipe(ItemOreTFC.get(TFCRegistries.ORES.getValue(GRAPHITE), 1), ItemPowder.get(Powder.GRAPHITE_POWDER, 4), 0.1F);
-        this.addGrindingRecipe(ItemOreTFC.get(TFCRegistries.ORES.getValue(SULFUR), 1), ItemPowder.get(Powder.SULFUR_POWDER, 4), 0.1F);
-        this.addGrindingRecipe(ItemOreTFC.get(TFCRegistries.ORES.getValue(SALTPETER), 1), ItemPowder.get(Powder.SALTPETER_POWDER, 4), 0.1F);
-        this.addGrindingRecipe(ItemOreTFC.get(TFCRegistries.ORES.getValue(CINNABAR), 1), new ItemStack(Items.REDSTONE, 8), 0.1F);
-        this.addGrindingRecipe(ItemOreTFC.get(TFCRegistries.ORES.getValue(CRYOLITE), 1), new ItemStack(Items.REDSTONE, 8), 0.1F);
-        this.addGrindingRecipe(ItemOreTFC.get(TFCRegistries.ORES.getValue(SYLVITE), 1), ItemPowder.get(Powder.FERTILIZER, 4), 0.1F);
-        this.addGrindingRecipe(new ItemStack(Items.BONE), new ItemStack(Items.DYE, 3, 15), 0.1F);
-        this.addGrindingRecipeForBlock(Blocks.BONE_BLOCK, new ItemStack(Items.DYE, 9, 15), 0.1F);
-        this.addGrindingRecipe(ItemRock.get(TFCRegistries.ROCKS.getValue(ROCKSALT), 1), ItemPowder.get(Powder.SALT, 4), 0.1F);
-        this.addGrindingRecipe(ItemOreTFC.get(TFCRegistries.ORES.getValue(LAPIS_LAZULI), 1), new ItemStack(Items.DYE, 3, 4), 0.1F);
-    }
-
-    public void addGrindingRecipeForBlock(Block input, ItemStack output, float experience)
-    {
-        this.addGrinding(Item.getItemFromBlock(input), output, experience);
-    }
-
-    public void addGrinding(Item input, ItemStack output, float experience)
-    {
-        this.addGrindingRecipe(new ItemStack(input, 1), output, experience);
-    }
-
-    public void addGrindingRecipe(ItemStack input, ItemStack output, float experience)
-    {
-        if (getGrindingResult(input) != ItemStack.EMPTY)
+        this.group = group;
+        output = result.copy();
+        for (Object in : recipe)
         {
-            TerraFirmaCraft.getLog().info("Ignored grinding recipe with conflicting input: {} = {}", input, output);
-            return;
-        }
-        this.grindingList.put(input, output);
-        this.experienceList.put(output, experience);
-    }
-
-    public boolean getIsValidGrindingIngredient(ItemStack stack)
-    {
-        for (Map.Entry<ItemStack, ItemStack> entry : this.grindingList.entrySet())
-        {
-            if (this.compareItemStacks(stack, entry.getKey()))
+            Ingredient ing = CraftingHelper.getIngredient(in);
+            if (ing != null)
             {
-                return true;
+                input = ing;
+            }
+            else
+            {
+                String ret = "Invalid quern recipe: ";
+                for (Object tmp : recipe)
+                {
+                    ret += tmp + ", ";
+                }
+                ret += output;
+                throw new RuntimeException(ret);
             }
         }
-
-        return false;
     }
 
-    public ItemStack getGrindingResult(ItemStack stack)
+    @Override
+    public boolean matches(@Nonnull InventoryCrafting inv, @Nonnull World world)
     {
-        for (Map.Entry<ItemStack, ItemStack> entry : this.grindingList.entrySet())
+        return inv.getClass().getSimpleName().equals("ContainerQuern");
+    }
+
+    @Override
+    @Nonnull
+    public ItemStack getCraftingResult(@Nonnull InventoryCrafting var1) { return output.copy(); }
+
+    @Override
+    public boolean canFit(int width, int height)
+    {
+        return true;
+    }
+
+    @Override
+    @Nonnull
+    public ItemStack getRecipeOutput() { return output; }
+
+    public static class Factory implements IRecipeFactory
+    {
+        public IRecipe parse(final JsonContext context, final JsonObject json)
         {
-            if (this.compareItemStacks(stack, entry.getKey()))
-            {
-                return entry.getValue();
-            }
+            String group = JsonUtils.getString(json, "group", "");
+
+            Ingredient ingredient = (CraftingHelper.getIngredient(JsonUtils.getJsonObject(json, "ingredient"), context));
+            if (ingredient == Ingredient.EMPTY)
+                throw new JsonParseException("No ingredient for quern recipe");
+
+            ItemStack output = CraftingHelper.getItemStack(JsonUtils.getJsonObject(json, "result"), context);
+            if (output == ItemStack.EMPTY)
+                throw new JsonParseException("No result for quern recipe");
+
+            float experience = JsonUtils.getFloat(json, "experience", 0.1f);
+
+            return QuernRecipeManager.getInstance().addGrindingRecipe(group, ingredient, output, experience);
         }
-
-        return ItemStack.EMPTY;
-    }
-
-    @SuppressWarnings("unused")
-    public Map<ItemStack, ItemStack> getGrindingList()
-    {
-        return this.grindingList;
-    }
-
-    public float getGrindingExperience(ItemStack stack)
-    {
-        float ret = stack.getItem().getSmeltingExperience(stack);
-        if (ret != -1) return ret;
-
-        for (Map.Entry<ItemStack, Float> entry : this.experienceList.entrySet())
-        {
-            if (this.compareItemStacks(stack, entry.getKey()))
-            {
-                return entry.getValue();
-            }
-        }
-
-        return 0.0F;
-    }
-
-    private boolean compareItemStacks(ItemStack stack1, ItemStack stack2)
-    {
-        return stack2.getItem() == stack1.getItem() && (stack2.getMetadata() == 32767 || stack2.getMetadata() == stack1.getMetadata()) && stack2.getItemDamage() == stack1.getItemDamage();
     }
 }

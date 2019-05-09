@@ -18,6 +18,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import net.dries007.tfc.objects.te.TEInventory;
+import net.dries007.tfc.objects.te.TEQuern;
 import net.dries007.tfc.util.ITileFields;
 
 /**
@@ -93,10 +94,15 @@ public abstract class ContainerTE<T extends TEInventory> extends Container
         int containerSlots = inventorySlots.size() - player.inventory.mainInventory.size();
         if (index < containerSlots)
         {
-            if (!this.mergeItemStack(stack, containerSlots, inventorySlots.size(), true))
+            if (tile instanceof TEQuern && index == TEQuern.SLOT_OUTPUT)
+            {
+                ((TEQuern) tile).takeCraftingResult(player, stack);
+            }
+            else if (!this.mergeItemStack(stack, containerSlots, inventorySlots.size(), true))
             {
                 return ItemStack.EMPTY;
             }
+
             tile.setAndUpdateSlots(index);
         }
         // Transfer into the container

@@ -1,0 +1,13 @@
+{
+  "type": "tfc:quern",
+  "group": "tfc:bonemeal",
+  "experience": 0.45,
+  "ingredient": {
+    "item": "minecraft:bone_block"
+  },
+  "result": {
+    "item": "minecraft:dye",
+    "data": 15,
+    "count": 9
+  }
+}

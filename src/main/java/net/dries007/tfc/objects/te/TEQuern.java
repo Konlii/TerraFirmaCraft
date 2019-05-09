@@ -31,7 +31,7 @@ import net.dries007.tfc.network.PacketQuernUpdate;
 import net.dries007.tfc.network.PacketRequestQuernUpdate;
 import net.dries007.tfc.objects.items.ItemHandstone;
 import net.dries007.tfc.objects.items.ItemsTFC;
-import net.dries007.tfc.objects.recipes.QuernRecipe;
+import net.dries007.tfc.objects.recipes.QuernRecipeManager;
 import net.dries007.tfc.util.Helpers;
 
 import static net.minecraft.init.SoundEvents.*;
@@ -101,7 +101,7 @@ public class TEQuern extends TEInventory implements ITickable
             case SLOT_HANDSTONE:
                 return stack.getItem() instanceof ItemHandstone;
             case SLOT_INPUT:
-                return QuernRecipe.instance().getIsValidGrindingIngredient(stack);
+                return QuernRecipeManager.getInstance().getIsValidGrindingIngredient(stack);
             default:
                 return false;
         }
@@ -199,7 +199,7 @@ public class TEQuern extends TEInventory implements ITickable
         if (!player.world.isRemote)
         {
             int i = removeCount;
-            float f = QuernRecipe.instance().getGrindingExperience(stack);
+            float f = QuernRecipeManager.getInstance().getGrindingExperience(stack);
 
             if (f == 0.0F)
             {
@@ -235,7 +235,7 @@ public class TEQuern extends TEInventory implements ITickable
         if (hasHandstone)
         {
             ItemStack inputStack = inventory.getStackInSlot(SLOT_INPUT);
-            ItemStack resultStack = QuernRecipe.instance().getGrindingResult(inputStack);
+            ItemStack resultStack = QuernRecipeManager.getInstance().getGrindingResult(inputStack);
             ItemStack outputStack = inventory.getStackInSlot(SLOT_OUTPUT);
 
             if (outputStack.isEmpty())

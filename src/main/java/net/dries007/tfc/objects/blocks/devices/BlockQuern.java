@@ -166,12 +166,13 @@ public class BlockQuern extends Block implements IItemSize
         TEQuern teQuern = Helpers.getTE(world, pos, TEQuern.class);
         if (teQuern != null)
         {
-            if (!teQuern.getIsGrinding() && !playerIn.isSneaking())
+            boolean isGrinding = teQuern.getIsGrinding();
+            if (!isGrinding && !playerIn.isSneaking())
             {
                 if (playerStack.isEmpty() && facing == EnumFacing.UP && hitX > 0.2f && hitX < 0.4f && hitZ > 0.2f && hitZ < 0.4f && hitY >= 0.875)
                 {
                     teQuern.grind();
-                    world.playSound(null, pos, SoundEventRegistry.QUERN_GRIND, SoundCategory.BLOCKS, 1, 1 + ((world.rand.nextFloat() - world.rand.nextFloat()) / 10));
+                    world.playSound(null, pos, SoundEventRegistry.QUERN_GRIND, SoundCategory.BLOCKS, 1, 1 + ((world.rand.nextFloat() - world.rand.nextFloat()) / 16));
                 }
                 else if (!world.isRemote)
                 {
@@ -180,7 +181,6 @@ public class BlockQuern extends Block implements IItemSize
             }
             else if (!world.isRemote && playerIn.isSneaking())
             {
-                boolean isGrinding = teQuern.getIsGrinding();
                 ItemStackHandler inventory = teQuern.getInventory();
                 ItemStack inputStack = inventory.getStackInSlot(TEQuern.SLOT_INPUT);
                 ItemStack outputStack = inventory.getStackInSlot(TEQuern.SLOT_OUTPUT);

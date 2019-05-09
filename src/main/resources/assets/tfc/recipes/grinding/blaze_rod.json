@@ -1,0 +1,11 @@
+{
+  "type": "tfc:quern",
+  "experience": 0.1,
+  "ingredient": {
+    "item": "minecraft:blaze_rod"
+  },
+  "result": {
+    "item": "minecraft:blaze_powder",
+    "count": 2
+  }
+}
