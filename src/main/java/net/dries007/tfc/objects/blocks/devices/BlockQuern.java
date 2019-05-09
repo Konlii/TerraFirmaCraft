@@ -29,11 +29,12 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.items.ItemStackHandler;
 
-import net.dries007.tfc.CommonEventHandler;
+import net.dries007.tfc.SoundEventRegistry;
 import net.dries007.tfc.api.capability.size.IItemSize;
 import net.dries007.tfc.api.capability.size.Size;
 import net.dries007.tfc.api.capability.size.Weight;
 import net.dries007.tfc.client.TFCGuiHandler;
+import net.dries007.tfc.objects.items.ItemHandstone;
 import net.dries007.tfc.objects.te.TEQuern;
 import net.dries007.tfc.util.Helpers;
 
@@ -160,17 +161,17 @@ public class BlockQuern extends Block implements IItemSize
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
     {
-        ItemStack stack = playerIn.getHeldItem(hand);
+        ItemStack playerStack = playerIn.getHeldItem(hand);
+
         TEQuern teQuern = Helpers.getTE(world, pos, TEQuern.class);
         if (teQuern != null)
         {
-            int rotationTimer = teQuern.getRotationTimer();
-            if (rotationTimer == 0 && !playerIn.isSneaking())
+            if (!teQuern.getIsGrinding() && !playerIn.isSneaking())
             {
-                if (stack.isEmpty() && facing == EnumFacing.UP && hitX > 0.2f && hitX < 0.4f && hitZ > 0.2f && hitZ < 0.4f)
+                if (playerStack.isEmpty() && facing == EnumFacing.UP && hitX > 0.2f && hitX < 0.4f && hitZ > 0.2f && hitZ < 0.4f && hitY >= 0.875)
                 {
-                    teQuern.setRotationTimer(90);
-                    world.playSound(null, pos, CommonEventHandler.QUERN_GRIND, SoundCategory.BLOCKS, 1, 1);
+                    teQuern.grind();
+                    world.playSound(null, pos, SoundEventRegistry.QUERN_GRIND, SoundCategory.BLOCKS, 1, 1 + ((world.rand.nextFloat() - world.rand.nextFloat()) / 10));
                 }
                 else if (!world.isRemote)
                 {
@@ -179,58 +180,67 @@ public class BlockQuern extends Block implements IItemSize
             }
             else if (!world.isRemote && playerIn.isSneaking())
             {
+                boolean isGrinding = teQuern.getIsGrinding();
                 ItemStackHandler inventory = teQuern.getInventory();
+                ItemStack inputStack = inventory.getStackInSlot(TEQuern.SLOT_INPUT);
+                ItemStack outputStack = inventory.getStackInSlot(TEQuern.SLOT_OUTPUT);
 
                 if (hitX > 0.2f && hitX < 0.8f && hitZ > 0.2f && hitZ < 0.8f)
                 {
-                    if (hitX > 0.4f && hitX < 0.6f && hitZ > 0.4f && hitZ < 0.6f && stack.isEmpty() && !inventory.getStackInSlot(TEQuern.SLOT_INPUT).isEmpty())
+                    if (hitX > 0.4f && hitX < 0.6f && hitZ > 0.4f && hitZ < 0.6f && playerStack.isEmpty() && !inputStack.isEmpty())
                     {
-                        playerIn.setHeldItem(hand, inventory.extractItem(TEQuern.SLOT_INPUT, inventory.getStackInSlot(TEQuern.SLOT_INPUT).getCount(), false));
+                        playerIn.setHeldItem(hand, inventory.extractItem(TEQuern.SLOT_INPUT, inputStack.getCount(), false));
                         teQuern.setAndUpdateSlots(TEQuern.SLOT_INPUT);
                         world.playSound(null, pos, SoundEvents.BLOCK_CLOTH_HIT, SoundCategory.BLOCKS, 1, 1);
                     }
-                    else if (hitX > 0.4f && hitX < 0.6f && hitZ > 0.4f && hitZ < 0.6f && !stack.isEmpty() && teQuern.isItemValid(TEQuern.SLOT_INPUT, stack))
+                    else if (hitX > 0.4f && hitX < 0.6f && hitZ > 0.4f && hitZ < 0.6f && !playerStack.isEmpty() && teQuern.isItemValid(TEQuern.SLOT_INPUT, playerStack))
                     {
-                        playerIn.setHeldItem(hand, teQuern.insertOrSwapItem(TEQuern.SLOT_INPUT, stack));
+                        playerIn.setHeldItem(hand, teQuern.insertOrSwapItem(TEQuern.SLOT_INPUT, playerStack));
                         teQuern.setAndUpdateSlots(TEQuern.SLOT_INPUT);
                         world.playSound(null, pos, SoundEvents.BLOCK_CLOTH_PLACE, SoundCategory.BLOCKS, 1, 1);
                     }
-                    else if (stack.isEmpty() && !inventory.getStackInSlot(TEQuern.SLOT_HANDSTONE).isEmpty())
+                    else if (!isGrinding && playerStack.isEmpty() && teQuern.getHasHandstone())
                     {
                         playerIn.setHeldItem(hand, inventory.extractItem(TEQuern.SLOT_HANDSTONE, inventory.getStackInSlot(TEQuern.SLOT_HANDSTONE).getCount(), false));
                         teQuern.setAndUpdateSlots(TEQuern.SLOT_HANDSTONE);
                         world.playSound(null, pos, SoundEvents.BLOCK_STONE_HIT, SoundCategory.BLOCKS, 1, 1);
                     }
-                    else if (!stack.isEmpty() && teQuern.isItemValid(TEQuern.SLOT_HANDSTONE, stack))
+                    else if (!isGrinding && !playerStack.isEmpty() && teQuern.isItemValid(TEQuern.SLOT_HANDSTONE, playerStack))
                     {
-                        playerIn.setHeldItem(hand, teQuern.insertOrSwapItem(TEQuern.SLOT_HANDSTONE, stack));
+                        if (playerStack.getCount() == 1)
+                            playerIn.setHeldItem(hand, teQuern.insertOrSwapItem(TEQuern.SLOT_HANDSTONE, playerStack));
+                        else
+                            playerIn.addItemStackToInventory(teQuern.insertOrSwapItem(TEQuern.SLOT_HANDSTONE, playerStack.splitStack(1)));
                         teQuern.setAndUpdateSlots(TEQuern.SLOT_HANDSTONE);
                         world.playSound(null, pos, SoundEvents.BLOCK_STONE_PLACE, SoundCategory.BLOCKS, 1, 1);
                     }
                 }
                 else if ((hitX <= 0.2f || hitX >= 0.8f || hitZ <= 0.2f || hitZ >= 0.8f) && hitY >= 0.625)
                 {
-                    if (stack.isEmpty() && !inventory.getStackInSlot(TEQuern.SLOT_OUTPUT).isEmpty())
+                    if (playerStack.isEmpty() && !outputStack.isEmpty())
                     {
-                        playerIn.setHeldItem(hand, inventory.extractItem(TEQuern.SLOT_OUTPUT, inventory.getStackInSlot(TEQuern.SLOT_OUTPUT).getCount(), false));
+                        playerIn.setHeldItem(hand, teQuern.takeCraftingResult(playerIn, outputStack));
                         teQuern.setAndUpdateSlots(TEQuern.SLOT_OUTPUT);
                         world.playSound(null, pos, SoundEvents.BLOCK_CLOTH_HIT, SoundCategory.BLOCKS, 1, 1);
                     }
-                    else if (!stack.isEmpty() && teQuern.isItemValid(TEQuern.SLOT_OUTPUT, stack))
+                    else if (!playerStack.isEmpty() && !outputStack.isEmpty() && !(playerStack.getItem() instanceof ItemHandstone))
                     {
-                        playerIn.setHeldItem(hand, teQuern.insertOrSwapItem(TEQuern.SLOT_OUTPUT, stack));
+                        playerIn.addItemStackToInventory(teQuern.takeCraftingResult(playerIn, outputStack));
                         teQuern.setAndUpdateSlots(TEQuern.SLOT_OUTPUT);
                         world.playSound(null, pos, SoundEvents.BLOCK_CLOTH_PLACE, SoundCategory.BLOCKS, 1, 1);
                     }
-                    else if (stack.isEmpty() && !inventory.getStackInSlot(TEQuern.SLOT_HANDSTONE).isEmpty())
+                    else if (!isGrinding && playerStack.isEmpty() && teQuern.getHasHandstone())
                     {
                         playerIn.setHeldItem(hand, inventory.extractItem(TEQuern.SLOT_HANDSTONE, inventory.getStackInSlot(TEQuern.SLOT_HANDSTONE).getCount(), false));
                         teQuern.setAndUpdateSlots(TEQuern.SLOT_HANDSTONE);
                         world.playSound(null, pos, SoundEvents.BLOCK_STONE_HIT, SoundCategory.BLOCKS, 1, 1);
                     }
-                    else if (!stack.isEmpty() && teQuern.isItemValid(TEQuern.SLOT_HANDSTONE, stack))
+                    else if (!isGrinding && !playerStack.isEmpty() && teQuern.isItemValid(TEQuern.SLOT_HANDSTONE, playerStack))
                     {
-                        playerIn.setHeldItem(hand, teQuern.insertOrSwapItem(TEQuern.SLOT_HANDSTONE, stack));
+                        if (playerStack.getCount() == 1)
+                            playerIn.setHeldItem(hand, teQuern.insertOrSwapItem(TEQuern.SLOT_HANDSTONE, playerStack));
+                        else
+                            playerIn.addItemStackToInventory(teQuern.insertOrSwapItem(TEQuern.SLOT_HANDSTONE, playerStack.splitStack(1)));
                         teQuern.setAndUpdateSlots(TEQuern.SLOT_HANDSTONE);
                         world.playSound(null, pos, SoundEvents.BLOCK_STONE_PLACE, SoundCategory.BLOCKS, 1, 1);
                     }

@@ -9,7 +9,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.passive.EntityCow;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -18,28 +20,30 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.items.ItemStackHandler;
 
+import mcp.MethodsReturnNonnullByDefault;
 import net.dries007.tfc.TerraFirmaCraft;
 import net.dries007.tfc.network.PacketQuernUpdate;
 import net.dries007.tfc.network.PacketRequestQuernUpdate;
 import net.dries007.tfc.objects.items.ItemHandstone;
 import net.dries007.tfc.objects.items.ItemsTFC;
+import net.dries007.tfc.objects.recipes.QuernRecipe;
+import net.dries007.tfc.util.Helpers;
 
-import static net.minecraft.init.SoundEvents.BLOCK_STONE_BREAK;
-import static net.minecraft.init.SoundEvents.ENTITY_ITEM_BREAK;
+import static net.minecraft.init.SoundEvents.*;
 
+@MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class TEQuern extends TEInventory implements ITickable
 {
-    public static final int SLOT_INPUT = 0;
-    public static final int SLOT_OUTPUT = 1;
-    public static final int SLOT_HANDSTONE = 2;
-    /*
-        private ContainerQuern container;
-    */
+    public static final int SLOT_HANDSTONE = 0;
+    public static final int SLOT_INPUT = 1;
+    public static final int SLOT_OUTPUT = 2;
+
     private int rotationTimer;
     private boolean hasHandstone;
 
@@ -94,14 +98,10 @@ public class TEQuern extends TEInventory implements ITickable
     {
         switch (slot)
         {
-            case SLOT_INPUT:
-            {
-                return !(stack.getItem() instanceof ItemHandstone); // todo: quern recipes inputs
-            }
-            case SLOT_OUTPUT:
-                return !(stack.getItem() instanceof ItemHandstone); // todo: quern recipe outputs
             case SLOT_HANDSTONE:
                 return stack.getItem() instanceof ItemHandstone;
+            case SLOT_INPUT:
+                return QuernRecipe.instance().getIsValidGrindingIngredient(stack);
             default:
                 return false;
         }
@@ -127,14 +127,19 @@ public class TEQuern extends TEInventory implements ITickable
         return rotationTimer;
     }
 
-    public void setRotationTimer(int rotationTimer)
+    public boolean getIsGrinding()
     {
-        this.rotationTimer = rotationTimer;
+        return rotationTimer > 0;
     }
 
     public boolean getHasHandstone()
     {
         return hasHandstone;
+    }
+
+    public void grind()
+    {
+        this.rotationTimer = 90;
     }
 
     @Override
@@ -145,17 +150,21 @@ public class TEQuern extends TEInventory implements ITickable
         if (rotationTimer > 0)
         {
             rotationTimer--;
-            if (rotationTimer == 0 /* todo: process recipe */)
+
+            if (rotationTimer == 0)
             {
+                grindItem();
+                world.playSound(null, pos, ENTITY_ARMORSTAND_FALL, SoundCategory.BLOCKS, 1.0f, 0.8f);
                 inventory.getStackInSlot(SLOT_HANDSTONE).damageItem(1, new EntityCow(world));
+
                 if (inventory.getStackInSlot(SLOT_HANDSTONE).isEmpty())
                 {
                     for (int i = 0; i < 15; i++)
                     {
                         world.spawnParticle(EnumParticleTypes.ITEM_CRACK, pos.getX() + 0.5D, pos.getY() + 0.875D, pos.getZ() + 0.5D, (world.rand.nextDouble() - world.rand.nextDouble()) / 4, world.rand.nextDouble() / 4, (world.rand.nextDouble() - world.rand.nextDouble()) / 4, Item.getIdFromItem(ItemsTFC.HANDSTONE));
                     }
-                    world.playSound(null, pos, BLOCK_STONE_BREAK, SoundCategory.BLOCKS, 1.0f, 1.0f);
-                    world.playSound(null, pos, ENTITY_ITEM_BREAK, SoundCategory.BLOCKS, 1.0f, 0.75f);
+                    world.playSound(null, pos, BLOCK_STONE_BREAK, SoundCategory.BLOCKS, 1.0f, 0.8f);
+                    world.playSound(null, pos, ENTITY_ITEM_BREAK, SoundCategory.BLOCKS, 1.0f, 0.6f);
                 }
             }
             setAndUpdateSlots(SLOT_HANDSTONE);
@@ -181,6 +190,70 @@ public class TEQuern extends TEInventory implements ITickable
         if (world.isRemote)
         {
             TerraFirmaCraft.getNetwork().sendToServer(new PacketRequestQuernUpdate(this));
+        }
+    }
+
+    public ItemStack takeCraftingResult(EntityPlayer player, ItemStack stack)
+    {
+        int removeCount = stack.getCount();
+        if (!player.world.isRemote)
+        {
+            int i = removeCount;
+            float f = QuernRecipe.instance().getGrindingExperience(stack);
+
+            if (f == 0.0F)
+            {
+                i = 0;
+            }
+            else if (f < 1.0F)
+            {
+                int j = MathHelper.floor((float) i * f);
+
+                if (j < MathHelper.ceil((float) i * f) && Math.random() < (double) ((float) i * f - (float) j))
+                {
+                    ++j;
+                }
+
+                i = j;
+            }
+
+            while (i > 0)
+            {
+                int k = EntityXPOrb.getXPSplit(i);
+                i -= k;
+                player.world.spawnEntity(new EntityXPOrb(player.world, player.posX, player.posY + 0.5D, player.posZ + 0.5D, k));
+                world.playSound(null, player.getPosition(), ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, 1.0F + ((world.rand.nextFloat() - world.rand.nextFloat()) / 16F));
+            }
+        }
+
+        stack.onCrafting(player.world, player, removeCount);
+        return inventory.extractItem(SLOT_OUTPUT, removeCount, false);
+    }
+
+    private void grindItem()
+    {
+        if (hasHandstone)
+        {
+            ItemStack inputStack = inventory.getStackInSlot(SLOT_INPUT);
+            ItemStack resultStack = QuernRecipe.instance().getGrindingResult(inputStack);
+            ItemStack outputStack = inventory.getStackInSlot(SLOT_OUTPUT);
+
+            if (outputStack.isEmpty())
+            {
+                inventory.setStackInSlot(SLOT_OUTPUT, resultStack.copy());
+            }
+            else if (outputStack.getItem() == resultStack.getItem())
+            {
+                if (!world.isRemote)
+                    Helpers.spawnItemStack(world, pos.add(0.5, 1.0D, 0.5), inventory.insertItem(SLOT_OUTPUT, resultStack, true));
+                inventory.insertItem(SLOT_OUTPUT, resultStack, false);
+            }
+            else if (!world.isRemote)
+            {
+                Helpers.spawnItemStack(world, pos.add(0.5, 1.0D, 0.5), resultStack);
+            }
+
+            inputStack.shrink(1);
         }
     }
 }

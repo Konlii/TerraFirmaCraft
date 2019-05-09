@@ -20,6 +20,7 @@ import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 
@@ -29,6 +30,7 @@ import net.dries007.tfc.api.capability.size.Size;
 import net.dries007.tfc.api.capability.size.Weight;
 import net.dries007.tfc.api.util.IPlaceableItem;
 import net.dries007.tfc.network.PacketCalendarUpdate;
+import net.dries007.tfc.objects.blocks.devices.BlockQuern;
 import net.dries007.tfc.objects.container.CapabilityContainerListener;
 import net.dries007.tfc.util.Helpers;
 
@@ -74,8 +76,14 @@ public final class CommonEventHandler
     {
         final World world = event.getWorld();
         final BlockPos pos = event.getPos();
+        final Block block = world.getBlockState(pos).getBlock();
         final ItemStack stack = event.getItemStack();
         final EntityPlayer player = event.getEntityPlayer();
+
+        if (block instanceof BlockQuern)
+        {
+            event.setUseBlock(Event.Result.ALLOW);
+        }
 
         if (IPlaceableItem.Impl.isPlaceable(stack))
         {

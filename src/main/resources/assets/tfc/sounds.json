@@ -3,8 +3,9 @@
     "category": "block",
     "subtitle": "subtitles.block.quern.grind",
     "sounds": [
-      "tfc:stonedrag1",
-      "tfc:stonedrag2"
+      {
+        "name": "tfc:quern"
+      }
     ]
   }
 }

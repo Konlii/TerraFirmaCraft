@@ -9,6 +9,8 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
+import net.dries007.tfc.objects.inventory.slot.SlotQuernHandstone;
+import net.dries007.tfc.objects.inventory.slot.SlotQuernOutput;
 import net.dries007.tfc.objects.inventory.slot.SlotTEInput;
 import net.dries007.tfc.objects.te.TEQuern;
 
@@ -19,9 +21,6 @@ public class ContainerQuern extends ContainerTE<TEQuern>
     public ContainerQuern(InventoryPlayer playerInv, TEQuern te)
     {
         super(playerInv, te, true);
-/*
-        te.setContainer(this);
-*/
     }
 
     @Override
@@ -30,15 +29,9 @@ public class ContainerQuern extends ContainerTE<TEQuern>
         IItemHandler inventory = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
         if (inventory != null)
         {
+            addSlotToContainer(new SlotQuernHandstone(inventory, SLOT_HANDSTONE, 93, 20, tile));
             addSlotToContainer(new SlotTEInput(inventory, SLOT_INPUT, 66, 47, tile));
-            addSlotToContainer(new SlotTEInput(inventory, SLOT_OUTPUT, 93, 47, tile));
-            addSlotToContainer(new SlotTEInput(inventory, SLOT_HANDSTONE, 93, 20, tile));
+            addSlotToContainer(new SlotQuernOutput(player, inventory, SLOT_OUTPUT, 93, 47));
         }
-    }
-
-    @Override
-    protected int[] getSlotShiftOrder(int containerSlots)
-    {
-        return new int[] {2, 0, 1};
     }
 }
